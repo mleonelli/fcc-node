@@ -1,8 +1,10 @@
 
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 
 // --> 7)  Mount the Logger middleware here
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(function(req, res, next) {
   console.log(req.method + ' ' + req.path + ' - ' + req.ip);
   next();
@@ -32,7 +34,11 @@ app.use(express.static(__dirname + '/public'));
 app.get('/json', function(req, res){
   app.set('json spaces', 2);
   app.set('json replacer', '');
+  
   var obj = { message : 'Hello json'};
+  if(process.env.MESSAGE_STYLE === 'uppercase')
+    obj.message = obj.message.toUpperCase();
+
   res.json(obj);
   //res.json({"message": "Hello json"});
 });
@@ -63,7 +69,15 @@ app.get('/:word/echo', function(req, res) {
 
 /** 10) Get input from client - Query parameters */
 // /name?first=<firstname>&last=<lastname>
-
+app.route('/name')
+  .get(function(req, res) {
+  var obj = { name : req.query.first + ' ' + req.query.last};
+  res.json(obj);
+})
+  .post(function(req, res) {
+   var obj = { name : req.body.first + ' ' + req.body.last};
+  res.json(obj);
+});
   
 /** 11) Get ready for POST Requests - the `body-parser` */
 // place it before all the routes !
